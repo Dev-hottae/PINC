@@ -1,1 +1,2 @@
 # PINC
+predict info & create
