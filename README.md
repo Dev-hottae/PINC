@@ -1,2 +1,2 @@
 # PINC
-predict info & create
+Predict Info & Create
