@@ -41,8 +41,8 @@ class ExampleSpider(scrapy.Spider):
                 yield scrapy.Request(news_url, callback=self.article_ed, cb_kwargs=dict(title=title))
             elif office_name == '머니투데이':
                 yield scrapy.Request(news_url, callback=self.article_mn, cb_kwargs=dict(title=title))
-            # elif office_name == '아시아경제':
-            #     yield scrapy.Request(news_url, callback=self.article_ak, cb_kwargs=dict(title=title))
+            elif office_name == '아시아경제':
+                yield scrapy.Request(news_url, callback=self.article_ak, cb_kwargs=dict(title=title))
             elif office_name == '헤럴드경제':
                 yield scrapy.Request(news_url, callback=self.article_hr, cb_kwargs=dict(title=title))
             elif office_name == '파이낸셜뉴스':
@@ -125,7 +125,7 @@ class ExampleSpider(scrapy.Spider):
             'office': '이데일리',
             'title': title,
             'url' : response.url,
-            'text': ' '.join(response.css('div.news_body::text').getall()).strip().replace('\n', ' ').replace('\\',
+            'text': ' '.join(response.css('div.news_body ::text').getall()).strip().replace('\n', ' ').replace('\\',
                                                                                                               ' ').replace(
                 '\"', ' ').replace('\r', ' ').replace('\t', ' ').replace('  ', ' ')
         }
@@ -137,7 +137,7 @@ class ExampleSpider(scrapy.Spider):
             'office': '머니투데이',
             'title': title,
             'url' : response.url,
-            'text': ' '.join(response.css('div#textBody::text').getall()).strip().replace('\n', ' ').replace('\\',
+            'text': ' '.join(response.css('div#textBody ::text').getall()).strip().replace('\n', ' ').replace('\\',
                                                                                                               ' ').replace(
                 '\"', ' ').replace('\r', ' ').replace('\t', ' ').replace('  ', ' ')
         }
@@ -150,8 +150,8 @@ class ExampleSpider(scrapy.Spider):
             'office': '아시아경제',
             'title': title,
             'url': response.url,
-            'text': ' '.join(response.css('div#txt_area > p::text').getall()).strip().replace('\n',
-                                                                                                           ' ').replace(
+            'text': ' '.join(response.xpath('//*[@id="txt_area"]/p/text() | //*[@id="txt_area"]/p[1]/span/a/text()').getall()).strip().replace('\n',
+                                                                                              ' ').replace(
                 '\\',
                 ' ').replace(
                 '\"', ' ').replace('\r', ' ').replace('\t', ' ').replace('  ', ' ')
@@ -192,7 +192,7 @@ class ExampleSpider(scrapy.Spider):
             'office': '한국경제',
             'title': title,
             'url': response.url,
-            'text': ' '.join(response.css('div#articletxt::text').getall()).strip().replace('\n',
+            'text': ' '.join(response.css('div#articletxt ::text').getall()).strip().replace('\n',
                                                                                                           ' ').replace(
                 '\\',
                 ' ').replace(
@@ -200,9 +200,10 @@ class ExampleSpider(scrapy.Spider):
         }
     # 매일경제
     def article_mk(self, response, title):
+
         yield {
             'date': re.search('[0-9]{4}[\.\-]?[0-9]{2}[\.\-]?[0-9]{2}',
-                              response.css('li.lasttime::text').get()).group(),
+                              response.xpath('//*[@id="top_header"]/div/div/div[1]/ul/li[2]/text()').get()).group(),
             'office': '매일경제',
             'title': title,
             'url': response.url,
