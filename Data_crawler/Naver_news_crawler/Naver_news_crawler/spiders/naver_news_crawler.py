@@ -33,41 +33,31 @@ class ExampleSpider(scrapy.Spider):
             if (office_name in self.offices) and (
                     'news.naver.com/' in news_url):
                 yield scrapy.Request(news_url, callback=self.article_com, cb_kwargs=dict(title=title))
-            elif office_name == '연합뉴스':
-                yield scrapy.Request(news_url, callback=self.article_yn, cb_kwargs=dict(title=title))
-            elif office_name == '연합인포맥스':
-                yield scrapy.Request(news_url, callback=self.article_yi, cb_kwargs=dict(title=title))
+            # elif office_name == '연합뉴스':
+            #     yield scrapy.Request(news_url, callback=self.article_yn, cb_kwargs=dict(title=title))
+            # elif office_name == '연합인포맥스':
+            #     yield scrapy.Request(news_url, callback=self.article_yi, cb_kwargs=dict(title=title))
             elif office_name == '이데일리':
                 yield scrapy.Request(news_url, callback=self.article_ed, cb_kwargs=dict(title=title))
-            elif office_name == '머니투데이':
-                yield scrapy.Request(news_url, callback=self.article_mn, cb_kwargs=dict(title=title))
+            # elif office_name == '머니투데이':
+            #     yield scrapy.Request(news_url, callback=self.article_mn, cb_kwargs=dict(title=title))
             elif office_name == '아시아경제':
                 yield scrapy.Request(news_url, callback=self.article_ak, cb_kwargs=dict(title=title))
             elif office_name == '헤럴드경제':
                 yield scrapy.Request(news_url, callback=self.article_hr, cb_kwargs=dict(title=title))
-            elif office_name == '파이낸셜뉴스':
-                yield scrapy.Request(news_url, callback=self.article_fn, cb_kwargs=dict(title=title))
-            elif office_name == '한국경제':
-                yield scrapy.Request(news_url, callback=self.article_hk, cb_kwargs=dict(title=title))
-            elif office_name == '매일경제':
-                yield scrapy.Request(news_url, callback=self.article_mk, cb_kwargs=dict(title=title))
+            # elif office_name == '파이낸셜뉴스':
+            #     yield scrapy.Request(news_url, callback=self.article_fn, cb_kwargs=dict(title=title))
+            # elif office_name == '한국경제':
+            #     yield scrapy.Request(news_url, callback=self.article_hk, cb_kwargs=dict(title=title))
+            # elif office_name == '매일경제':
+            #     yield scrapy.Request(news_url, callback=self.article_mk, cb_kwargs=dict(title=title))
             else:
                 pass
         # 현재 페이지정보
         page_text = response.css('div.title_desc span::text').get()
-        total_page = re.search('(?<=\/ ).*(?=건)', page_text)
-        self.final_page = int(page_text[total_page.start():total_page.end()].replace(',', ''))
-        # 마지막 페이지 도착 이전까지
-        if self.cur_page < self.final_page:
-            # 다음페이지 정보로 업데이트
-            self.cur_page += 10
-            # 다음페이지 호출
-            str_date = self.start_date.strftime("%Y%m%d")
-            dot_date = str_date[:4] + '.' + str_date[4:6] + '.' + str_date[6:]
-            next_page_url = 'https://search.naver.com/search.naver?&where=news&query={0}&sm=tab_pge&sort=0&photo=0&field=0&reporter_article=&pd=3&ds={1}&de={1}&docid=&nso=so:r,p:from{2}to{2},a:all&mynews=0&cluster_rank=34&start={3}'.format(
-                self.query, dot_date, str_date, str(self.cur_page))
-            yield scrapy.Request(next_page_url, callback=self.parse)
-        else:
+        try:
+            total_page = re.search('(?<=\/ ).*(?=건)', page_text)
+        except:
             # 페이지 없음
             # 날짜 업데이트
             self.start_date += datetime.timedelta(days=1)
@@ -82,6 +72,33 @@ class ExampleSpider(scrapy.Spider):
             else:
                 print("크롤링 종료")
                 return
+        else:
+            self.final_page = int(page_text[total_page.start():total_page.end()].replace(',', ''))
+            # 마지막 페이지 도착 이전까지
+            if self.cur_page < self.final_page:
+                # 다음페이지 정보로 업데이트
+                self.cur_page += 10
+                # 다음페이지 호출
+                str_date = self.start_date.strftime("%Y%m%d")
+                dot_date = str_date[:4] + '.' + str_date[4:6] + '.' + str_date[6:]
+                next_page_url = 'https://search.naver.com/search.naver?&where=news&query={0}&sm=tab_pge&sort=0&photo=0&field=0&reporter_article=&pd=3&ds={1}&de={1}&docid=&nso=so:r,p:from{2}to{2},a:all&mynews=0&cluster_rank=34&start={3}'.format(
+                    self.query, dot_date, str_date, str(self.cur_page))
+                yield scrapy.Request(next_page_url, callback=self.parse)
+            else:
+                # 페이지 없음
+                # 날짜 업데이트
+                self.start_date += datetime.timedelta(days=1)
+                if self.start_date <= self.end_date:
+                    # 신규 날짜로 1번 페이지 부터 재호출
+                    self.cur_page = 1
+                    str_date = self.start_date.strftime("%Y%m%d")
+                    dot_date = str_date[:4] + '.' + str_date[4:6] + '.' + str_date[6:]
+                    next_date_url = 'https://search.naver.com/search.naver?&where=news&query={0}&sm=tab_pge&sort=0&photo=0&field=0&reporter_article=&pd=3&ds={1}&de={1}&docid=&nso=so:r,p:from{2}to{2},a:all&mynews=0&cluster_rank=34&start={3}'.format(
+                        self.query, dot_date, str_date, str(self.cur_page))
+                    yield scrapy.Request(next_date_url, callback=self.parse)
+                else:
+                    print("크롤링 종료")
+                    return
     # 네이버뉴스 redirection
     def article_com(self, response, title):
         yield {
@@ -158,6 +175,9 @@ class ExampleSpider(scrapy.Spider):
         }
     # 헤럴드경제
     def article_hr(self, response, title):
+
+        # text 형식이
+
         yield {
             'date': re.search('[0-9]{4}[\.\-]?[0-9]{2}[\.\-]?[0-9]{2}',
                               ' '.join(response.css('div.view_top_t2 ul li.ellipsis::text').getall())).group(),

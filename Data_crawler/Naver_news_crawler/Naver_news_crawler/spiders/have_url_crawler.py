@@ -7,20 +7,20 @@ import pandas as pd
 class HaveUrl(scrapy.Spider):
     name = "have_url_crawler"
 
-    def __init__(self, file_path='', file_type='', news_office='', time_break=0, **kwargs):
+    def __init__(self, file_path='', news_office='아시아경제', file_type='json', time_break=0, **kwargs):
         super().__init__(**kwargs)
         self.file_path = file_path
         self.time_break = time_break
         
         # self.news_office = news_office
-        self.news_office ='아시아경제'
+        self.news_office = news_office
         # # url 설정
-        # if file_type == 'json':
-        #     self.start_urls = pd.read_json(self.file_path)['url'].tolist()
-        # elif file_type == 'csv':
-        #     self.start_urls = pd.read_csv(self.file_path)['url'].tolist()
+        if file_type == 'json':
+            self.start_urls = pd.read_json(self.file_path)['url'].tolist()
+        elif file_type == 'csv':
+            self.start_urls = pd.read_csv(self.file_path)['url'].tolist()
 
-        self.start_urls=['https://view.asiae.co.kr/article/2020092511181299253']
+        # self.start_urls=['http://view.asiae.co.kr/news/view.htm?idxno=2015123109145857650']
 
     def parse(self, response):
 
@@ -108,17 +108,17 @@ class HaveUrl(scrapy.Spider):
     # 아시아경제
     def article_ak(self, response):
 
-        print("!!!!!!!!!!!!!!!!!!")
-        print(response.xpath('//*[@id="txt_area"]/p/text() | //*[@id="txt_area"]/p[1]/span/a/text()').getall())
-        print("!!!!!!!!!!!!!!!!!!!")
-        # ' '.join(t.strip() for i, t in enumerate(response.css('p ::text').extract()) if i < 2).strip()
+        # 중간에 기사 태그형식 바뀜
+        text = response.xpath('//*[@id="txt_area"]/p/text() | //*[@id="txt_area"]/p[1]/span/a/text()').getall()
+        if text == []:
+            text = response.xpath('//*[@id="txt_area"]/text() | //*[@id="txt_area"]/span/a/text()').getall()
 
         yield {
             'date': re.search('[0-9]{4}[\.\-]?[0-9]{2}[\.\-]?[0-9]{2}',
                               response.css('div.area_title p.user_data::text').getall()[1]).group(),
             'office': '아시아경제',
             'url': response.url,
-            'text': ' '.join(response.xpath('//*[@id="txt_area"]/p/text() | //*[@id="txt_area"]/p[1]/span/a/text()').getall()).strip().replace('\n',
+            'text': ' '.join(text).strip().replace('\n',
                                                                                               ' ').replace(
                 '\\',
                 ' ').replace(
@@ -127,12 +127,18 @@ class HaveUrl(scrapy.Spider):
 
     # 헤럴드경제
     def article_hr(self, response):
+
+        # text 형식 중간에 바뀜
+        text = response.css('div#content_ADTOM div#articleText > p::text').getall()
+        if text == []:
+            text = response.css('div#content_ADTOM div#articleText::text').getall()
+
         yield {
             'date': re.search('[0-9]{4}[\.\-]?[0-9]{2}[\.\-]?[0-9]{2}',
                               ' '.join(response.css('div.view_top_t2 ul li.ellipsis::text').getall())).group(),
             'office': '헤럴드경제',
             'url': response.url,
-            'text': ' '.join(response.css('div#content_ADTOM div#articleText > p::text').getall()).strip().replace(
+            'text': ' '.join(text).strip().replace('\xa0', ' ').replace(
                 '\n',
                 ' ').replace(
                 '\\',
