@@ -8,7 +8,7 @@ from tqdm import tqdm
 from gensim import corpora
 from gensim.models import LdaModel, TfidfModel
 import warnings
-from eunjeon import Mecab
+from konlpy.tag import Mecab
 
 warnings.filterwarnings("ignore")
 import os
@@ -110,20 +110,10 @@ class Tokenizer:
 
     def _token_refine(self):
 
-        print("체크용 프린트")
-        print(self.data.loc[3].token)
-
         self.data['token'] = self.data['token'].progress_apply(lambda x: " ".join(x))
-
-
-        print(self.data.loc[3].token)
-
-
         self.data['token'] = self.data['token'].str.replace(r'##[^\s]*[\s]', '')
         self.data['token'] = self.data['token'].str.replace(r'\[[\w]{3}\]', '')
         self.data['token'] = self.data['token'].progress_apply(lambda x: x.split())
-
-        print(self.data.loc[3].token)
 
     def get_lda(self, n):
         id2word = corpora.Dictionary(self.data['token'])

@@ -35,7 +35,7 @@ tok = Tokenizer(data=data, vocab_file=None)
 tok.date_condition(start_date="2005-01-01")
 # # 데이터 맞춤법 교정 // 현재 속도 굉장히 느림
 print("맞춤법 교정중")
-tok.check_spell(data_trunc=20, max_char=500, dropna=True)
+# tok.check_spell(data_trunc=20, max_char=500, dropna=True)
 print("맞춤법 교정완료")
 # mecab 을 활용한 불용어제거
 print("불용어제거중")

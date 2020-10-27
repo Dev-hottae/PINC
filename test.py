@@ -1,29 +1,12 @@
 
-import requests
-from bs4 import BeautifulSoup
 
-code = "028300"
+# 1. 6개월 단위로 뉴스기사 분리
 
-url = 'https://navercomp.wisereport.co.kr/v2/company/ajax/cF1001.aspx?cmp_cd=004990&fin_typ=0&freq_typ=Q&encparam=VG5ybFRrbFBRRDFhQ1BORG1sWHZyZz09&id=QmZIZ20rMn'
 
-res = requests.get(url)
+# 2. 각 기간별로 top 100 토픽 추출
 
-bs = BeautifulSoup(res.text, 'html.parser')
-data = bs.select("tbody tr")
-# print(data)
-issued = data[-1]
-print(issued)
-# title = issued.select("tr th")[0].text
-_1906 = issued.select("td")[0].text
-_1909 = issued.select("td")[1].text
-_1912 = issued.select("td")[2].text
-_2003 = issued.select("td")[3].text
-_2006 = issued.select("td")[4].text
+# 3. 불필요한 topic 리스트에 담고 제외
 
-# print(title)
-print(_1906)
-print(_1909)
-print(_1912)
-print(_2003)
-print(_2006)
+# 4. 일정 기간 나오지 못한 토픽은 우선제외 & 금융 관련 토픽 제외
 
+# 5. 거래량 과거 100일 중 최처값 차감
