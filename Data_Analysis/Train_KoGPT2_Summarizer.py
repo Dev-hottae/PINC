@@ -76,39 +76,39 @@ data_file_path = 'Data_crawler/dataset/삼성전자_pred/pre_삼성전자_연합
 
 news_data = Dataset_Train(data_file_path)
 news_dataset = GPTDataset(news_data, vocab, sentencepieceTokenizer)  # Torch DataLoader 형태 맞춰주는 Dataset 설정
-news_data_loader = DataLoader(news_dataset, batch_size=4, shuffle=True, pin_memory=True, num_workers=3)
+news_data_loader = DataLoader(news_dataset, batch_size=4, shuffle=True, pin_memory=True, num_workers=0)
 
 # 파라미터 설정
 learning_rate = 1e-5
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(kogpt2model.parameters(), lr=learning_rate)
 
-# for epoch in range(10):
-#     count = 0
-#     avg_loss = (0.0, 0.0)
-#     for data in tqdm(news_data_loader):
-#         optimizer.zero_grad()
-#         # Data에 Torch 스택
-#         data = torch.stack(data)
-#         data = data.transpose(1,0)
-#         # 데이터와 모델에 GPU 설정
-#         data = data.to(device)
-#         kogpt2model = kogpt2model.to(device)
-#         # 결과값
-#         outputs = kogpt2model(data, labels=data)
-#         loss, logits = outputs[:2]
-#         loss = loss.to(device)
-#         loss.backward()
-#         avg_loss = (avg_loss[0] * 0.99 + loss, avg_loss[1] * 0.99 + 1.0)
-#         optimizer.step()
-#         count+=1
-#
-#         if count % 1000 == 0:
-#             print('epoch no.{0} train no.{1}  loss = {2:.5f} avg_loss = {3:.5f}' . format(epoch+1, count, loss, avg_loss[0] / avg_loss[1]))
-#
-#     # 에폭 마다 모델 저장
-#     torch.save({
-#         'model_state_dict': kogpt2model.state_dict(),
-#         'optimizer_state_dict' : optimizer.state_dict(),
-#         'loss' : loss
-#         }, save_path+'Summarizer_KoGPT2_checkpoint{}.tar'.format(epoch+1))
+for epoch in range(10):
+    count = 0
+    avg_loss = (0.0, 0.0)
+    for data in tqdm(news_data_loader):
+        optimizer.zero_grad()
+        # Data에 Torch 스택
+        data = torch.stack(data)
+        data = data.transpose(1,0)
+        # 데이터와 모델에 GPU 설정
+        data = data.to(device)
+        kogpt2model = kogpt2model.to(device)
+        # 결과값
+        outputs = kogpt2model(data, labels=data)
+        loss, logits = outputs[:2]
+        loss = loss.to(device)
+        loss.backward()
+        avg_loss = (avg_loss[0] * 0.99 + loss, avg_loss[1] * 0.99 + 1.0)
+        optimizer.step()
+        count+=1
+
+        if count % 1000 == 0:
+            print('epoch no.{0} train no.{1}  loss = {2:.5f} avg_loss = {3:.5f}' . format(epoch+1, count, loss, avg_loss[0] / avg_loss[1]))
+
+    # 에폭 마다 모델 저장
+    torch.save({
+        'model_state_dict': kogpt2model.state_dict(),
+        'optimizer_state_dict' : optimizer.state_dict(),
+        'loss' : loss
+        }, save_path+'Summarizer_KoGPT2_checkpoint{}.tar'.format(epoch+1))

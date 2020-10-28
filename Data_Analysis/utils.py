@@ -33,9 +33,12 @@ def koGPT2Vocab():
 def Dataset_Train(path):
     data_path = path
     news_data = pd.read_json(data_path, encoding='utf-8')
+
+    news_data['text'] = news_data['text'].apply(lambda x: ". ".join(x[:10]))
+
     dataset_train = []
     for i in tqdm(range(len(news_data))):
-        dataset_train.append(news_data['Topic_keywords'][i] + ". " + news_data['Text'][i])
+        dataset_train.append(news_data['Topic_keyword'][i] + ". " + news_data['text'][i])
     return dataset_train
 
 class GPTDataset(Dataset):
