@@ -61,15 +61,37 @@ token_df.to_json("after_tokenizing.json")
 #### 성능개선 필요함 시간 오래걸림
 # LDA 토픽추출
 print("LDA run...")
-test = tok.get_lda(n=100, num_words=6)
-print(test)
-test.to_json("lda_100.json")
+topic_df = tok.get_lda(n=100, num_words=6)
+print(topic_df)
+topic_df.to_json("lda_100.json")
 print("LDA 완료")
 
 
+
+## stock_vol 데이터 로드
+
+
+
 ## topic 기준 뉴스데이터 선정
-# ex = Ex(topic_df, stock_vol)
-# ex.stop_topic(allow=3)
-# ex.topic_count(news_df=tok.data[['text']])
+ex = Ex(topic_df, stock_vol)
+ex.stop_topic(allow=3)
+print("stop_topic after")
+print(ex.topic_df)
+ex.topic_count(tok.data[['date','text']])
+print("topic count after")
+print(ex.topic_df.head(50))
+print(ex.topic_df.tail(50))
+
+print("토픽 카운트 데이터 저장")
+ex.topic_df.to_json("topic_count.json")
+
+
+## 피크데이 정의
+ex.peak_day_vol()
+## 피크데이 뉴스 추출
+ex.peak_day_news()
+
+## 피크데이 토픽, 일자별 테이블 생성
+ex.topic_news_count()
 
 ## 추출된 키워드를 키반 GPT 알고리즘을 통해 자연어 생성

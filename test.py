@@ -40,10 +40,21 @@ print("stop_topic after")
 print(ex.topic_df)
 ex.topic_count(news_df)
 print("topic count after")
-print(ex.topic_df)
+print(ex.topic_df.head(50))
+print(ex.topic_df.tail(50))
 
-# pp = ['애플', '에어컨', '오디오', '살균', '제거', '제품']
-# STOP_LIST = {'코스피', '지수', '종목', '에어컨', '오디오'}
-# print(type('에어컨'))
-# print(type('에어컨'))
-# print(set(pp).difference(STOP_LIST))
+print("토픽 카운트 데이터 저장")
+ex.topic_df.to_json("topic_count.json")
+
+
+# ## 피크데이 정의
+# ex.peak_day_vol()
+# ## 피크데이 뉴스 추출
+# ex.peak_day_news()
+#
+# ## 피크데이 토픽, 일자별 테이블 생성
+# ex.topic_news_count()
+#
+# pp = ex.topic_news_count(news_df)
+# print(pp)
+
