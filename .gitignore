@@ -2,3 +2,4 @@
 /Data_crawler/dataset/
 /after_tokenizing.json
 /topic_modeling/for_tokenize.txt
+/lda_100.json

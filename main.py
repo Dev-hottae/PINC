@@ -8,7 +8,9 @@ from tokenizers import CharBPETokenizer, ByteLevelBPETokenizer, SentencePieceBPE
 
 
 ## 크롤링 종료 후 데이터 전처리
+
 from Data_crawler.data_pre_processing import Pre
+from topic_modeling.ex_topic_news import Ex
 from topic_modeling.tokenizer import Tokenizer
 
 path = r"Data_crawler/dataset"
@@ -39,7 +41,7 @@ print("맞춤법 교정중")
 print("맞춤법 교정완료")
 # mecab 을 활용한 불용어제거
 print("불용어제거중")
-tok.ex_stopword(True) ## 일단 mecab의 명사와 동사 추출
+tok.ex_stopword(True, allow_type='n') ## 일단 mecab의 명사와 동사 추출
 print("불용어제거완료")
 # tokenizer train
 print("토크나이저 사전 구축중")
@@ -56,10 +58,18 @@ token_df.to_json("after_tokenizing.json")
 
 
 
-
+#### 성능개선 필요함 시간 오래걸림
 # LDA 토픽추출
 print("LDA run...")
-test = tok.get_lda(n=100)
+test = tok.get_lda(n=100, num_words=6)
+print(test)
+test.to_json("lda_100.json")
 print("LDA 완료")
+
+
+## topic 기준 뉴스데이터 선정
+# ex = Ex(topic_df, stock_vol)
+# ex.stop_topic(allow=3)
+# ex.topic_count(news_df=tok.data[['text']])
 
 ## 추출된 키워드를 키반 GPT 알고리즘을 통해 자연어 생성

@@ -3,12 +3,15 @@ import datetime
 import re
 from datetime import time
 from xml.etree.ElementTree import ParseError
+
+import pandas as pd
+import unicodedata
 from hanspell import spell_checker
 from tqdm import tqdm
 from gensim import corpora
 from gensim.models import LdaModel, TfidfModel
 import warnings
-from konlpy.tag import Mecab
+from eunjeon import Mecab
 
 warnings.filterwarnings("ignore")
 import os
@@ -71,8 +74,13 @@ class Tokenizer:
         if dropna is True:
             self.data = self.data.dropna().reset_index(drop=True)
 
-    def ex_stopword(self, bool):
-        allow_vv = ["NNG", "NNP", "NNB", "NR", "NP", "VV", "VA", "VX", "VCP", "VCN", "MM", "MAG", "MAJ"]
+    def ex_stopword(self, bool, allow_type="nv"):
+
+        if allow_type == "n":
+            allow_vv = ["NNG", "NNP", "NNB", "NR", "NP"]
+        elif allow_type == "nv":
+            allow_vv = ["NNG", "NNP", "NNB", "NR", "NP", "VV", "VA", "VX", "VCP", "VCN", "MM", "MAG", "MAJ"]
+
         tqdm.pandas()
         if bool is True:
             mecab = Mecab()
@@ -99,8 +107,6 @@ class Tokenizer:
         tokenizer.save_model(".", "topic_modeling/huggingface_tokenizer_kor_32000")
 
     def tokenizer(self, tokenizer):
-        # print(tokenizer.encode(df['text'].tolist()).tokens)
-        # df['token'] = tokenizer.encode(df['text'].tolist()).tokens
         tqdm.pandas()
         self.data['token'] = self.data['stopped_text'].progress_apply(lambda x: tokenizer.encode(x).tokens)
 
@@ -112,10 +118,15 @@ class Tokenizer:
 
         self.data['token'] = self.data['token'].progress_apply(lambda x: " ".join(x))
         self.data['token'] = self.data['token'].str.replace(r'##[^\s]*[\s]', '')
+        self.data['token'] = self.data['token'].str.replace(r'__[^\s]*[\s]', '')
         self.data['token'] = self.data['token'].str.replace(r'\[[\w]{3}\]', '')
+        # 분절 자모 재결합
+        self.data['token'] = self.data['token'].progress_apply(lambda x: unicodedata.normalize('NFC', x))
+
         self.data['token'] = self.data['token'].progress_apply(lambda x: x.split())
 
-    def get_lda(self, n):
+
+    def get_lda(self, n, num_words):
         id2word = corpora.Dictionary(self.data['token'])
         corpus_TDM = [id2word.doc2bow(doc) for doc in self.data['token']]
         tfidf = TfidfModel(corpus_TDM)
@@ -125,9 +136,13 @@ class Tokenizer:
                             num_topics=n,
                             random_state=100)
 
-        return lda.print_topics(n)
+        twords = {}
+        for topic, word in lda.print_topics(n, num_words=num_words):
+            twords["topic_{}".format(topic+1)] = [re.findall(r"(?<=\")[^\s][^(?=\")]*(?=\")", word)]
 
-    def mallet_lda(self, num=100):
+        return pd.DataFrame(twords).T.rename(columns={0:"topic"})
+
+    def mallet_lda(self, num):
 
         id2word = corpora.Dictionary(self.data['token'])
         texts = self.data['token']
@@ -135,16 +150,4 @@ class Tokenizer:
         os.environ['Mallet_HOME'] = 'C:\\Mallet'
         mallet_path = 'C:\\Mallet\\bin\\mallet'
         ldamallet = LdaMallet(mallet_path, corpus=corpus, num_topics=num, id2word=id2word)
-        return ldamallet.print_topics(num)
-
-    def get_lda_with_data(self, n, data):
-        id2word = corpora.Dictionary(data['token'])
-        corpus_TDM = [id2word.doc2bow(doc) for doc in data['token']]
-        tfidf = TfidfModel(corpus_TDM)
-        corpus_TFIDF = tfidf[corpus_TDM]
-        lda = LdaModel(corpus=corpus_TFIDF,
-                            id2word=id2word,
-                            num_topics=n,
-                            random_state=100)
-
-        return lda.print_topics(n)
+        return ldamallet.print_topics(num, num_words=6)
