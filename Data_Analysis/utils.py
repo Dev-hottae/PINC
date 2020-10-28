@@ -1,7 +1,7 @@
 import pandas as pd
 from tqdm import tqdm
 from torch.utils.data import Dataset
-from PINC.Data_Analysis.kogpt2.utils import download, tokenizer, get_tokenizer
+from kogpt2.utils import download, tokenizer, get_tokenizer
 from gluonnlp.data import SentencepieceTokenizer
 
 
@@ -44,11 +44,11 @@ class GPTDataset(Dataset):
         self.vocab = vocab
         self.tokenizer = tokenizer
 
-    for data in data_file:
-        tokenized_line = self.tokenizer(data)
-        if len(tokenized_line) <= 1020: # 문장 총길이 1022로 제한
-            index_of_words = [vocab.bos_token] + tokenized_line + [vocab.padding_token] * (1020 - len(tokenized_line)) + [vocab.eos_token]
-            self.data.append(vocab(index_of_words))
+        for data in data_file:
+            tokenized_line = self.tokenizer(data)
+            if len(tokenized_line) <= 1020: # 문장 총길이 1022로 제한
+                index_of_words = [vocab.bos_token] + tokenized_line + [vocab.padding_token] * (1020 - len(tokenized_line)) + [vocab.eos_token]
+                self.data.append(vocab(index_of_words))
 
     def __len__(self):
         return len(self.data)
