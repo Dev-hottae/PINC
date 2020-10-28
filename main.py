@@ -69,29 +69,40 @@ print("LDA 완료")
 
 
 ## stock_vol 데이터 로드
-
+stock_vol = pd.read_csv("Data_crawler/dataset/삼성전자_trading_data/d_score.csv")
 
 
 ## topic 기준 뉴스데이터 선정
 ex = Ex(topic_df, stock_vol)
-ex.stop_topic(allow=3)
-print("stop_topic after")
-print(ex.topic_df)
-ex.topic_count(tok.data[['date','text']])
-print("topic count after")
-print(ex.topic_df.head(50))
-print(ex.topic_df.tail(50))
 
+## stop 토픽 제거
+print("스탑 토픽 정리")
+ex.stop_topic(allow=3)
+print(ex.topic_df)
+
+## 전 구간 내 토픽 카운팅
+print("토픽 카운팅 실행")
+ex.topic_count(news_df=tok.data[['date','text']], count_limit=20)
+print("토픽 카운팅 결과 상위 50개 출력")
+print(ex.topic_df.head(50))
 print("토픽 카운트 데이터 저장")
 ex.topic_df.to_json("topic_count.json")
 
+## 일자별 테이블 생성
+print("count_table 수행")
+ex.topic_count_by_day(news_df=tok.data[['date','text']])
+print("count_table 결과")
+print(ex.count_table)
+print("count_table 저장")
+ex.count_table.to_json("count_table.json")
+
 
 ## 피크데이 정의
-ex.peak_day_vol()
-## 피크데이 뉴스 추출
-ex.peak_day_news()
+ex.peak_day_vol(col_name="d_score")
 
-## 피크데이 토픽, 일자별 테이블 생성
-ex.topic_news_count()
+## 피크데이를 기준으로 FVE 추출
+ex.get_FVE()
+
+
 
 ## 추출된 키워드를 키반 GPT 알고리즘을 통해 자연어 생성
