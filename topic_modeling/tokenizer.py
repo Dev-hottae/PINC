@@ -134,6 +134,8 @@ class Tokenizer:
         lda = LdaModel(corpus=corpus_TFIDF,
                             id2word=id2word,
                             num_topics=n,
+                            passes=1,
+                            distributed=True,
                             random_state=100)
 
         twords = {}

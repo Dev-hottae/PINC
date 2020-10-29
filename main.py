@@ -30,7 +30,6 @@ for data_file in data_list:
     data = data.append(news)
 print("데이터 로딩 완료")
 print("============")
-
 print("데이터 토크나이징")
 tok = Tokenizer(data=data, vocab_file=None)
 # data 날짜 구간 조건
@@ -69,7 +68,7 @@ print("LDA 완료")
 
 
 ## stock_vol 데이터 로드
-stock_vol = pd.read_csv("Data_crawler/dataset/삼성전자_trading_data/d_score.csv")
+stock_vol = pd.read_json("Data_crawler/dataset/삼성전자_trading_data/d_score.json")
 
 
 ## topic 기준 뉴스데이터 선정
@@ -96,13 +95,19 @@ print(ex.count_table)
 print("count_table 저장")
 ex.count_table.to_json("count_table.json")
 
-
+# print("이상없음")
 ## 피크데이 정의
-ex.peak_day_vol(col_name="d_score")
+ex.peak_day()
 
 ## 피크데이를 기준으로 FVE 추출
 ex.get_FVE()
 
-
+## 선정 토픽과 거래량 상관관계 분석
+pp = ex.corr_topic_vol(cut_line=0)
+print(pp)
+## 최종 토픽
+pp = ex.topic_by_index(pp.index.tolist())
+print("최종 사용토픽")
+print(pp)
 
 ## 추출된 키워드를 키반 GPT 알고리즘을 통해 자연어 생성
