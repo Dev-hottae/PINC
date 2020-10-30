@@ -7,7 +7,7 @@ from tqdm import tqdm
 from nltk.tokenize import sent_tokenize
 from kogpt2.utils import download, tokenizer, get_tokenizer
 from kogpt2.pytorch_kogpt2 import GPT2Config, GPT2LMHeadModel
-from utils import Dataset_Train, GPTDataset
+from utils import GPT_Dataset_Train, GPTDataset
 
 pytorch_kogpt2 = {
     'url':
@@ -74,7 +74,7 @@ print("데이터 로드")
 
 data_file_path = 'Data_crawler/dataset/삼성전자_pred/pre_삼성전자_연합인포맥스.json'
 
-news_data = Dataset_Train(data_file_path)
+news_data = GPT_Dataset_Train(data_file_path)
 news_dataset = GPTDataset(news_data, vocab, sentencepieceTokenizer)  # Torch DataLoader 형태 맞춰주는 Dataset 설정
 news_data_loader = DataLoader(news_dataset, batch_size=4, shuffle=True, pin_memory=True, num_workers=0)
 
