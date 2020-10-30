@@ -30,9 +30,8 @@ for data_file in data_list:
     data = data.append(news)
 print("데이터 로딩 완료")
 print("============")
-
 print("데이터 토크나이징")
-tok = Tokenizer(data=data, vocab_file=None)
+tok = Tokenizer(data=data[:1000], vocab_file=None)
 # data 날짜 구간 조건
 tok.date_condition(start_date="2005-01-01")
 # # 데이터 맞춤법 교정 // 현재 속도 굉장히 느림
@@ -61,7 +60,8 @@ token_df.to_json("after_tokenizing.json")
 #### 성능개선 필요함 시간 오래걸림
 # LDA 토픽추출
 print("LDA run...")
-topic_df = tok.get_lda(n=100, num_words=6)
+topic_df = tok.get_lda(n=100, num_words=5)
+print("lda 이후 토픽테이블")
 print(topic_df)
 topic_df.to_json("lda_100.json")
 print("LDA 완료")
@@ -69,29 +69,47 @@ print("LDA 완료")
 
 
 ## stock_vol 데이터 로드
-
+stock_vol = pd.read_json("Data_crawler/dataset/삼성전자_trading_data/d_score.json")
 
 
 ## topic 기준 뉴스데이터 선정
 ex = Ex(topic_df, stock_vol)
-ex.stop_topic(allow=3)
-print("stop_topic after")
-print(ex.topic_df)
-ex.topic_count(tok.data[['date','text']])
-print("topic count after")
-print(ex.topic_df.head(50))
-print(ex.topic_df.tail(50))
 
+## stop 토픽 제거
+print("스탑 토픽 정리")
+ex.stop_topic(allow=3)
+print("스탑토픽 이후 토픽 테이블")
+print(ex.topic_df)
+
+## 전 구간 내 토픽 카운팅
+print("토픽 카운팅 실행")
+ex.topic_count(news_df=tok.data[['date','text']], count_limit=20)
+print("토픽 카운팅 결과 상위 50개 출력")
+print(ex.topic_df.head(50))
 print("토픽 카운트 데이터 저장")
 ex.topic_df.to_json("topic_count.json")
 
+## 일자별 테이블 생성
+print("count_table 수행")
+ex.topic_count_by_day(news_df=tok.data[['date','text']])
+print("count_table 결과")
+print(ex.count_table)
+print("count_table 저장")
+ex.count_table.to_json("count_table.json")
 
+# print("이상없음")
 ## 피크데이 정의
-ex.peak_day_vol()
-## 피크데이 뉴스 추출
-ex.peak_day_news()
+ex.peak_day()
 
-## 피크데이 토픽, 일자별 테이블 생성
-ex.topic_news_count()
+## 피크데이를 기준으로 FVE 추출
+ex.get_FVE(cut_line=0.99)
+
+## 선정 토픽과 거래량 상관관계 분석
+pp = ex.corr_topic_vol(cut_line=0)
+print(pp)
+## 최종 토픽
+pp = ex.topic_by_index(pp.index.tolist())
+print("최종 사용토픽")
+print(pp)
 
 ## 추출된 키워드를 키반 GPT 알고리즘을 통해 자연어 생성
