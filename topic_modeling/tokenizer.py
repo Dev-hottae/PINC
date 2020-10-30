@@ -140,7 +140,7 @@ class Tokenizer:
 
         twords = {}
         for topic, word in lda.print_topics(n, num_words=num_words):
-            twords["topic_{}".format(topic+1)] = [re.findall(r"(?<=\")[^\s][^(?=\")]*(?=\")", word)]
+            twords["{}".format(topic+1)] = [re.findall(r"(?<=\")[^\s][^(?=\")]*(?=\")", word)]
 
         return pd.DataFrame(twords).T.rename(columns={0:"topic"})
 

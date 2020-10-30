@@ -31,7 +31,7 @@ for data_file in data_list:
 print("데이터 로딩 완료")
 print("============")
 print("데이터 토크나이징")
-tok = Tokenizer(data=data, vocab_file=None)
+tok = Tokenizer(data=data[:1000], vocab_file=None)
 # data 날짜 구간 조건
 tok.date_condition(start_date="2005-01-01")
 # # 데이터 맞춤법 교정 // 현재 속도 굉장히 느림
@@ -60,7 +60,8 @@ token_df.to_json("after_tokenizing.json")
 #### 성능개선 필요함 시간 오래걸림
 # LDA 토픽추출
 print("LDA run...")
-topic_df = tok.get_lda(n=100, num_words=6)
+topic_df = tok.get_lda(n=100, num_words=5)
+print("lda 이후 토픽테이블")
 print(topic_df)
 topic_df.to_json("lda_100.json")
 print("LDA 완료")
@@ -77,6 +78,7 @@ ex = Ex(topic_df, stock_vol)
 ## stop 토픽 제거
 print("스탑 토픽 정리")
 ex.stop_topic(allow=3)
+print("스탑토픽 이후 토픽 테이블")
 print(ex.topic_df)
 
 ## 전 구간 내 토픽 카운팅
@@ -100,7 +102,7 @@ ex.count_table.to_json("count_table.json")
 ex.peak_day()
 
 ## 피크데이를 기준으로 FVE 추출
-ex.get_FVE()
+ex.get_FVE(cut_line=0.99)
 
 ## 선정 토픽과 거래량 상관관계 분석
 pp = ex.corr_topic_vol(cut_line=0)

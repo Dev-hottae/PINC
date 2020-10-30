@@ -36,7 +36,7 @@ class Ex:
         results = list(map(int, index_list))
         print(results)
         print(self.topic_df)
-        return self.topic_df[self.topic_df['Topic'].isin(results)][['Topic','allow_topic']]
+        return self.topic_df[self.topic_df['t_index'].isin(results)][['t_index','allow_topic']]
 
     def stop_topic(self, allow=3):
 
@@ -49,8 +49,8 @@ class Ex:
 
         tqdm.pandas()
         self.topic_df['allow_topic'] = self.topic_df['topic'].progress_apply(lambda x: _stop_check_func(x, allow))
-        self.topic_df = self.topic_df.drop(columns=['topic']).dropna().reset_index()
-        self.topic_df['Topic'] = self.topic_df.index + 1
+        self.topic_df = self.topic_df.drop(columns=['topic']).dropna().reset_index(drop=True)
+        self.topic_df['t_index'] = self.topic_df.index + 1
 
     # 전체 기사중 토픽관련 뉴스기사 갯수 카운트 by topic 기준
     def topic_count(self, news_df, topic_n=None, start_date=None, end_date=None, count_limit=1, inner=False):
@@ -65,12 +65,12 @@ class Ex:
         if inner is True:
             day_table = self.topic_df.copy()
             day_table['count'] = self.topic_df['allow_topic'].apply(lambda x: news_df['text'].str.contains("^" + "".join(["(?=.*{})".format(i) for i in x]), regex=True).sum())
-            return day_table[['Topic','count']].transpose().reset_index(drop=True)
+            return day_table[['t_index','count']].transpose().reset_index(drop=True)
 
         tqdm.pandas()
         self.topic_df['count'] = self.topic_df['allow_topic'].progress_apply(lambda x: news_df['text'].str.contains("^" + "".join(["(?=.*{})".format(i) for i in x]), regex=True).sum())
         self.topic_df = self.topic_df[self.topic_df['count'] >= count_limit].sort_values(by='count').reset_index(drop=True)
-        self.topic_df['Topic'] = self.topic_df.index + 1
+
 
     # 일자별로 각 토픽에 관련된 뉴스 기사 갯수 카운트 토픽이 columns
     def topic_count_by_day(self, news_df):
