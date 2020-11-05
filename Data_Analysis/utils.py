@@ -1,4 +1,6 @@
 import pandas as pd
+import torch
+from torch import nn
 from tqdm import tqdm
 from torch.utils.data import Dataset
 from kogpt2.utils import download, tokenizer, get_tokenizer

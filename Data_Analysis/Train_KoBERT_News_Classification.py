@@ -14,6 +14,8 @@ from kobert.utils import get_tokenizer, download, tokenizer
 from kobert.pytorch_kobert import get_pytorch_kobert_model
 from utils import BERT_Dataset_Train, BERTDataset, BERTClassifier, calc_accuracy
 
+from Data_Analysis.utils import GPT_Dataset_Train
+
 pytorch_kobert = {
     'url': 'https://kobert.blob.core.windows.net/models/kobert/pytorch/pytorch_kobert_2439f391a6.params',
     'fname': 'pytorch_kobert_2439f391a6.params',
@@ -34,7 +36,7 @@ bert_config = {
     'vocab_size': 8002
 }
 
-save_path = '/content/drive/My Drive/머신러닝/팀 프로젝트/06. AI를 이용한 금융 보고서/Data_Analysis/checkpoint/'
+save_path = 'Data_Analysis/checkpoint'
 ctx= 'cuda'
 cachedir='~/kobert/'
 
@@ -58,6 +60,7 @@ print('BERT 모델 선언')
 bertmodel = BertModel(config=BertConfig.from_dict(bert_config))
 bertmodel.state_dict(torch.load(model_path))
 
+print("GPU 디바이스 세팅")
 device = torch.device(ctx)
 bertmodel.to(device)
 bertmodel.train()
@@ -77,7 +80,7 @@ log_interval = 200
 learning_rate =  5e-5
 #################################################################################################
 print("데이터를 준비중입니다.")
-data_file_path = ''
+data_file_path = 'Data_crawler/dataset/삼성전자_pred/pre_삼성전자_연합인포맥스.json'
 
 dataset_train, dataset_test = GPT_Dataset_Train(data_file_path)
 data_train = BERTDataset(dataset_train, 0, 1, tok, max_len, True, False)
