@@ -1,10 +1,12 @@
 import pandas as pd
 import torch
+import numpy as np
 from torch import nn
 from tqdm import tqdm
 from torch.utils.data import Dataset
 from kogpt2.utils import download, tokenizer, get_tokenizer
 from gluonnlp.data import SentencepieceTokenizer
+import gluonnlp as nlp
 
 
 def sentencePieceTokenizer():
@@ -64,11 +66,9 @@ class GPTDataset(Dataset):
 ###############################################################################################################################################
 def BERT_Dataset_Train(path):
     data_path = path
-    news_data = pd.read_csv(data_path, encoding='utf-8', index_col=0)
+    news_data = pd.read_json(data_path, encoding='utf-8').reset_index(drop=True)
     news_data = news_data[['date', 'text', 'label']]
-    news_data = news_data[news_data['label']!=10]
-    news_data = news_data.reset_index()
-    news_data = news_data.drop(['Unnamed: 0'], axis=1)
+
     # 학습, 테스트 데이터 분리
     train_data = news_data.sample(frac=0.8, random_state=2020)
     train_data = train_data.dropna()

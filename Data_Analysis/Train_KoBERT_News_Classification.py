@@ -14,7 +14,7 @@ from kobert.utils import get_tokenizer, download, tokenizer
 from kobert.pytorch_kobert import get_pytorch_kobert_model
 from utils import BERT_Dataset_Train, BERTDataset, BERTClassifier, calc_accuracy
 
-from Data_Analysis.utils import GPT_Dataset_Train
+# from utils import GPT_Dataset_Train
 
 pytorch_kobert = {
     'url': 'https://kobert.blob.core.windows.net/models/kobert/pytorch/pytorch_kobert_2439f391a6.params',
@@ -36,7 +36,7 @@ bert_config = {
     'vocab_size': 8002
 }
 
-save_path = 'Data_Analysis/checkpoint'
+save_path = '/home/ubuntu/PINC/Data_Analysis/checkpoint'
 ctx= 'cuda'
 cachedir='~/kobert/'
 
@@ -80,9 +80,9 @@ log_interval = 200
 learning_rate =  5e-5
 #################################################################################################
 print("데이터를 준비중입니다.")
-data_file_path = 'Data_crawler/dataset/삼성전자_pred/pre_삼성전자_연합인포맥스.json'
+data_file_path = '/home/ubuntu/PINC/Data_crawler/dataset/bert_data/label_by0.02.json'
 
-dataset_train, dataset_test = GPT_Dataset_Train(data_file_path)
+dataset_train, dataset_test = BERT_Dataset_Train(data_file_path)
 data_train = BERTDataset(dataset_train, 0, 1, tok, max_len, True, False)
 data_test = BERTDataset(dataset_test, 0, 1, tok, max_len, True, False)
 train_dataloader = torch.utils.data.DataLoader(data_train, batch_size=batch_size, num_workers=5)
@@ -116,7 +116,7 @@ for e in range(num_epochs):
     test_acc = 0.0
     # 모델 학습 : model.train()을 지정해줘야 Fine Tunning이 이뤄짐
     model.train()
-    for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(tqdm_notebook(train_dataloader)):
+    for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(tqdm(train_dataloader)):
         optimizer.zero_grad()
         token_ids = token_ids.long().to(device)
         segment_ids = segment_ids.long().to(device)
@@ -134,7 +134,7 @@ for e in range(num_epochs):
     print("epoch {} train acc {}".format(e+1, train_acc / (batch_id+1)))
     # 모델 평가 : model.eval()을 지정해야 Fine Tunning을 멈추고 평가를 시작함
     model.eval()
-    for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(tqdm_notebook(test_dataloader)):
+    for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(tqdm(test_dataloader)):
         token_ids = token_ids.long().to(device)
         segment_ids = segment_ids.long().to(device)
         valid_length= valid_length
